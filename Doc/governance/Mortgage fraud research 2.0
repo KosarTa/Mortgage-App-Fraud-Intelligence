@@ -1,0 +1,320 @@
+## Glossary
+
+| Term | Meaning |
+|---|---|
+| **Origination** | The process of creating a new loan, from application to settlement. |
+| **Broker** | A licensed intermediary who helps a borrower find a loan and submits the application to a lender. |
+| **Aggregator** | A company that brokers operate under. Provides access to lenders, software, compliance and commission payments. |
+| **Lender** | The bank or institution that assesses, approves and funds the loan. |
+| **Credit assessor** | Lender staff member who reviews the application and decides whether it meets lending policy. |
+| **Serviceability** | Whether the borrower can afford the loan repayments. |
+| **Serviceability buffer** | An extra interest rate margin (3 percentage points, set by APRA) added when testing serviceability. |
+| **HEM** | Household Expenditure Measure. A benchmark of typical living costs used by lenders to check declared expenses. |
+| **DTI** | Debt-to-income ratio. Total debt ÷ gross annual income. |
+| **LVR** | Loan-to-value ratio. Loan amount ÷ property value. |
+| **LMI** | Lenders Mortgage Insurance. Insurance (paid by the borrower) that protects the lender if the borrower defaults. Usually required when LVR is above 80%. |
+| **Settlement** | The date the loan funds are paid and the property ownership transfers. |
+| **Arrears** | Repayments that are overdue. |
+| **Early arrears** | Arrears that occur soon after settlement (typically within the first 6–12 months). A common fraud indicator. |
+| **Upfront commission** | Payment from lender to broker when a loan settles, based on loan size. |
+| **Trail commission** | Ongoing payment from lender to broker while the loan remains active. |
+| **Clawback** | Lender recovers commission from the broker if the loan is repaid or refinanced early. |
+| **Fraud referral** | A case where an application was referred to the fraud team for investigation. |
+| **PAYG** | Pay As You Go. An employee paid a salary with tax withheld (as opposed to self-employed). |
+| **APRA** | Australian Prudential Regulation Authority. Regulates banks and sets lending standards. |
+| **ASIC** | Australian Securities and Investments Commission. Regulates brokers and consumer credit. |
+| **AUSTRAC** | Australia's financial intelligence agency. Detects money laundering and financial crime. |
+
+---
+
+## 3. Mortgage Origination Lifecycle
+
+The lifecycle has 8 stages. Each stage has inputs, checks and outputs. Fraud can enter at different stages.
+
+### Stage 1: Enquiry & Fact-Find
+**Purpose:** Collect the borrower's financial position and loan needs.
+
+**What happens:**
+- Broker (or bank lender) interviews the borrower.
+- Collects: income, employment, living expenses, existing debts, assets and savings, loan purpose (owner-occupier or investment), property details.
+- Broker estimates borrowing capacity and shortlists suitable lenders and loan products.
+- Broker must document why the recommended loan is in the borrower's best interests (Best Interests Duty).
+
+**Output:** Fact-find record and loan recommendation.
+
+**Fraud risk:** Income overstated or expenses understated at the point of data entry, by the borrower, the broker, or both.
+
+**Our data fields:** Salary, expenses, existing liabilities.
+
+---
+
+### Stage 2: Application & Documents
+**Purpose:** Submit a formal application with supporting evidence.
+
+**What happens:**
+- Broker enters application into the lender's system (via the aggregator's platform).
+- Supporting documents attached:
+  - Identity: driver's licence, passport
+  - Income (PAYG): recent payslips, employment letter
+  - Income (self-employed): tax returns, financial statements, ATO notices
+  - Bank statements: savings history and spending
+  - Liabilities: statements for credit cards, personal loans, other mortgages
+  - Property: contract of sale
+
+**Output:** Submitted application.
+
+**Fraud risk:** Forged or altered payslips, bank statements or tax returns; fake employer; use of another person's identity.
+
+**Our data fields:** Employment tenure, employment details. (Document analysis is out of scope.)
+
+---
+
+### Stage 3: Verification
+**Purpose:** Confirm the information and documents are genuine.
+
+**What happens:**
+- **Identity verification:** ID documents checked against official sources.
+- **Employment verification:** lender contacts the employer or checks employer details (ABN, address, phone).
+- **Income verification:** payslip amounts compared to salary deposits in bank statements.
+- **Savings verification:** checks that the deposit has been built up genuinely over time and is the borrower's own money.
+- **Liability check:** declared debts compared with credit report.
+
+**Output:** Verified application, or queries back to the broker.
+
+**Fraud risk:** Fake employers with phone lines set up to "confirm" employment; unverifiable business income; deposits sourced from third parties.
+
+**Our data fields:** Employment details.
+
+---
+
+### Stage 4: Credit Assessment
+**Purpose:** Decide whether the loan meets the lender's credit policy and regulatory requirements.
+
+**What happens:** Credit assessor runs serviceability, DTI, LVR, credit score and employment checks (detailed in section 5).
+
+**Output:** Credit recommendation.
+
+**Fraud risk:** Figures adjusted so the application passes thresholds by a small margin.
+
+**Our data fields:** Serviceability assessment, credit score, LVR.
+
+---
+
+### Stage 5: Valuation
+**Purpose:** Confirm the market value of the property used as security.
+
+**What happens:**
+- Lender orders an independent valuation.
+- The valuation determines the LVR.
+- If the valuation is lower than the purchase price, the LVR increases and the borrower may need LMI or a larger deposit.
+
+**Output:** Valuation report and final LVR.
+
+**Fraud risk:** Inflated valuation (sometimes through valuer collusion) to reduce LVR.
+
+**Our data fields:** Property value. (Valuation APIs are out of scope.)
+
+---
+
+### Stage 6: Approval / Decision
+**Purpose:** Make the lending decision.
+
+**What happens:**
+- Possible outcomes: approved, conditionally approved (e.g. subject to more documents), or declined.
+- Higher-risk applications may need sign-off from a senior credit officer.
+
+**Output:** Lending decision.
+
+**Where our system sits:** Our system produces a risk score, reason codes and an investigation recommendation **before** this decision, so a human can review suspicious applications. The system does not approve or decline loans.
+
+**Our data fields:** Lending decision.
+
+---
+
+### Stage 7: Settlement
+**Purpose:** Transfer funds and property ownership.
+
+**What happens:**
+- Lender pays the loan amount to the seller.
+- Borrower's deposit is paid.
+- Property ownership is registered to the borrower, and the lender's mortgage is registered over the property.
+- Broker receives upfront commission (paid by lender via aggregator).
+
+**Output:** Settled loan.
+
+**Fraud risk:** Deposit or settlement funds provided by an undisclosed third party or from offshore.
+
+**Our data fields:** Settlement outcomes (broker dataset).
+
+---
+
+### Stage 8: Post-Settlement
+**Purpose:** Manage the loan over its life.
+
+**What happens:**
+- Borrower makes regular repayments.
+- Lender monitors repayment behaviour and arrears.
+- Broker receives trail commission while the loan is active.
+
+**Fraud risk indicator:** Early arrears. If a borrower falls behind soon after settlement, the application may have misstated their ability to repay.
+
+**Our data fields:** Early arrears indicators (broker dataset).
+
+**Why this matters:** Fraud is often only discovered at this stage. Our project aims to detect risk at Stage 6 instead. Early arrears and fraud referrals are also inputs to broker risk scoring.
+
+---
+
+## 4. Broker Operating Model
+
+### 4.1 Market context
+- Brokers arranged **81.6% of new home loans** in Australia in the June 2026 quarter (about $139 billion). Source: MFAA.
+- Most mortgage applications, and therefore most mortgage fraud risk, come through brokers.
+
+### 4.2 Parties and responsibilities
+
+| Party | Responsibilities | Relationship |
+|---|---|---|
+| **Borrower** | Provides accurate information and documents. | Engages the broker. |
+| **Broker** | Collects borrower information, compares lender products, recommends a loan in the borrower's best interests, prepares and submits the application, liaises with lender until settlement. | Operates under an aggregator. Must hold an Australian Credit Licence or be an authorised credit representative. |
+| **Aggregator** | Provides brokers with access to a panel of lenders, application software, compliance oversight, training and commission processing. | Holds agreements with lenders. Brokers submit applications through the aggregator's platform. |
+| **Lender** | Verifies, assesses and decides on applications. Funds the loan. Pays commission. | Accredits brokers to submit applications. Can suspend or terminate broker accreditation. |
+
+**Application flow:** Borrower → Broker → Aggregator platform → Lender
+**Commission flow:** Lender → Aggregator → Broker
+
+### 4.3 Broker remuneration
+
+| Payment | When paid | Basis |
+|---|---|---|
+| Upfront commission | At settlement | Percentage of loan amount |
+| Trail commission | Ongoing, while loan is active | Percentage of outstanding loan balance |
+| Clawback | If loan is repaid or refinanced early | Lender recovers part of upfront commission |
+
+**Fraud incentive:** Commission depends on loans **settling** and on **loan size**. This creates an incentive to submit applications that will be approved and to maximise loan amounts.
+
+### 4.4 Regulation
+- **National Consumer Credit Protection Act 2009 (NCCP):** brokers must be licensed and meet responsible lending obligations.
+- **Best Interests Duty (from 1 January 2021):** brokers must act in the consumer's best interests and prioritise the consumer's interests when there is a conflict.
+- **Regulator:** ASIC.
+
+### 4.5 Broker fraud risk indicators
+
+| # | Indicator | Why it's a risk | Data field |
+|---|---|---|---|
+| 1 | Approval rate significantly higher than peers | May indicate applications are being manipulated to meet lender criteria. | Approval rate |
+| 2 | Historical fraud referrals | Prior fraud concerns are linked to higher future risk. | Fraud referrals |
+| 3 | Early arrears rate higher than peers | Suggests borrowers' ability to repay was misstated. | Early arrears rate |
+| 4 | Repeated employers, income amounts or loan structures across clients | Indicates applications may be created from a template or coordinated. | Employer, salary, loan amount |
+| 5 | Concentration in a region or aggregator | Fraud networks often operate within a geographic area. | Region, aggregator |
+| 6 | Sudden increase in submission volume | May indicate a batch of manipulated applications. | Applications submitted, application date |
+
+---
+
+## 5. Credit Assessment Process
+
+Credit assessment determines whether a borrower can repay the loan and whether the loan meets the lender's policy and APRA requirements. Each check below is performed by the lender during Stage 4.
+
+### 5.1 Serviceability
+**Definition:** Whether the borrower's income can cover living expenses, existing debt repayments and the new loan repayments.
+
+**Calculation:**
+```
+Net monthly surplus = Net monthly income
+                    − Living expenses
+                    − Existing debt repayments
+                    − New loan repayment (at assessment rate)
+```
+If the surplus is below zero (or below the lender's minimum), the application fails serviceability.
+
+**Fraud angle:** Increase income, reduce expenses, or hide debts to create a positive surplus.
+
+**Data fields:** Salary, expenses, existing liabilities, serviceability assessment.
+
+### 5.2 Serviceability buffer
+**Definition:** APRA requires lenders to calculate the new loan repayment at an interest rate **at least 3 percentage points above** the actual loan rate (the "assessment rate"). Confirmed unchanged in May 2026.
+
+**Calculation:**
+```
+Assessment rate = Actual loan rate + 3%
+Example: 6.0% loan rate → repayments tested at 9.0%
+```
+
+**Purpose:** Ensures borrowers can still afford repayments if interest rates rise.
+
+**Fraud angle:** Applications adjusted so they pass the assessment-rate test by a small margin.
+
+**Data fields:** Serviceability assessment.
+
+### 5.3 Living expenses
+**Definition:** The borrower declares their monthly living costs. The lender compares this to the **HEM benchmark** for a household with the same income, size and location.
+
+**Rule:** The lender uses the **higher** of declared expenses and HEM.
+
+**Fraud angle:** Declaring expenses well below realistic levels. Applications where declared expenses sit at or below the benchmark, combined with a narrow serviceability pass, are higher risk.
+
+**Data fields:** Expenses.
+
+### 5.4 Debt-to-income (DTI)
+**Definition:** Total debt compared to gross annual income.
+
+**Calculation:**
+```
+DTI = (New loan amount + Existing debts) ÷ Gross annual income
+Example: ($680,000 + $20,000) ÷ $90,000 = 7.8
+```
+
+**Rule:** A DTI of **6 or more** is classified as high-DTI. APRA limits banks to no more than **20% of new lending** at DTI ≥ 6 (confirmed May 2026).
+
+**Fraud angle:** Inflating income reduces DTI. Example: the same debt with income inflated to $120,000 gives DTI = 5.8, moving the loan out of the high-DTI category.
+
+**Data fields:** Salary, loan amount, existing liabilities.
+
+### 5.5 Loan-to-value ratio (LVR)
+**Definition:** The loan amount as a percentage of the property value.
+
+**Calculation:**
+```
+LVR = Loan amount ÷ Property value × 100
+Example: $680,000 ÷ $850,000 = 80%
+```
+
+**Rules:**
+- LVR above **80%** usually requires Lenders Mortgage Insurance (LMI).
+- Higher LVR = higher risk to the lender.
+
+**Fraud angle:** An inflated property value lowers the LVR. Example: the same loan on a valuation of $950,000 gives LVR = 71.6%. A deposit funded by an undisclosed third party also misrepresents the borrower's real equity.
+
+**Data fields:** LVR, loan amount, property value.
+
+### 5.6 Credit score
+**Definition:** A score from a credit reporting body based on the borrower's credit history: repayment history, defaults, number of credit applications and existing credit limits.
+
+**Use:** Lower scores indicate higher risk. Some lenders set minimum scores.
+
+**Fraud angle:** Use of another person's identity or a synthetic identity to access a clean credit history.
+
+**Data fields:** Credit score (synthetic). Credit bureau integration is out of scope.
+
+### 5.7 Employment
+**Definition:** Assessment of income stability based on employment type and tenure.
+
+**Factors:**
+- **Type:** PAYG employee, casual, contractor or self-employed.
+- **Tenure:** length of time in current role. Many lenders require a minimum period (often 3–6 months for PAYG, or 1–2 years of trading history for self-employed).
+- **Industry and employer:** whether the employer is established and verifiable.
+
+**Fraud angle:** Fake employers; very short tenure combined with an unusually high salary; the same employer appearing across many unrelated applicants.
+
+**Data fields:** Employment tenure, employment details.
+
+### 5.8 Summary of checks
+
+| Check | Question answered | Formula / rule | Key fraud tactic |
+|---|---|---|---|
+| Serviceability | Can the borrower afford repayments? | Income − expenses − debts − new repayment ≥ 0 | Inflate income, cut expenses, hide debts |
+| Serviceability buffer | Can they afford it if rates rise? | Test at loan rate + 3% | Engineer a narrow pass |
+| Living expenses | Are declared costs realistic? | Use higher of declared vs HEM | Understate expenses |
+| DTI | Is total debt too high for income? | Debt ÷ income; ≥ 6 is high | Inflate income to get DTI < 6 |
+| LVR | How much of the property is the lender funding? | Loan ÷ value; > 80% needs LMI | Inflate valuation, hide deposit source |
+| Credit score | Is the borrower's credit history reliable? | Bureau score | Identity manipulation |
+| Employment | Is the income stable and real? | Type + tenure + verifiable employer | Fake employer, short tenure + high pay |
