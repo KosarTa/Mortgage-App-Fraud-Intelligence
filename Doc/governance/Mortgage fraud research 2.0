@@ -1,3 +1,23 @@
+# Mortgage Fraud & Lending Research
+
+**Ticket:** MBP-5 – Research Mortgage Fraud and Lending Processes
+**Sprint:** 1 – Discovery, Data Design & Environment Build
+**Author:** Governance & Risk Engineer
+**Purpose:** Give the team a shared understanding of how mortgage fraud happens, how loans move from application to repayment, how brokers operate, and how lenders assess loans, so we can design realistic synthetic data, fraud scenarios, risk indicators and governance controls.
+
+**Contents**
+- Glossary
+- 1. Background: Operation Claw
+- 2. Methods of Fraud
+- 3. Mortgage Origination Lifecycle
+- 4. Broker Operating Model
+- 5. Credit Assessment Process
+- 6. Fraud Types vs Our Scope
+- 7. Implications for Our Project
+- Sources
+
+---
+
 ## Glossary
 
 | Term | Meaning |
@@ -24,6 +44,57 @@
 | **APRA** | Australian Prudential Regulation Authority. Regulates banks and sets lending standards. |
 | **ASIC** | Australian Securities and Investments Commission. Regulates brokers and consumer credit. |
 | **AUSTRAC** | Australia's financial intelligence agency. Detects money laundering and financial crime. |
+| **Fintel Alliance** | AUSTRAC's public–private partnership with banks, law enforcement and regulators, set up to share intelligence on financial crime. |
+| **SMR** | Suspicious Matter Report. A report a bank must lodge with AUSTRAC when it suspects a customer or transaction is linked to crime. |
+| **Accreditation** | A lender's approval for a broker to submit applications to it. Lenders can suspend or terminate it. |
+
+---
+
+## 1. Background: Operation Claw (2026)
+
+**What it was:** A joint investigation by AUSTRAC's **Fintel Alliance** into suspected mortgage fraud across Australian lenders.
+
+| Item | Detail |
+|---|---|
+| **Started** | February 2026 |
+| **Findings announced** | 19 August 2026 |
+| **Data analysed** | Mortgage data from **10 major Australian banks** |
+| **Scale** | AUSTRAC described "potentially hundreds of millions" of dollars in suspected fraudulent loans. Media later reported suspect lending of at least **$4 billion** across the five largest banks. |
+| **Location** | Mostly linked to properties in **Sydney** |
+| **Referrals** | Around **200 brokers, lawyers, accountants and companies** referred to authorities (ASIC, ATO, Tax Practitioners Board, police) |
+| **Other outcomes** | Some banking relationships ended; about 1,800 suspicious matter reports received after AUSTRAC sent a threat alert to more than 100 lenders and industry bodies |
+
+**Fraud methods found:**
+- Inflated incomes
+- Misrepresented employment
+- Fabricated or unverifiable business activity
+- Falsified or misleading documents (reportedly including false payslips and fabricated invoices)
+- Offshore or third-party funds used for settlements and repayments
+
+**Key pattern:** The **same brokers, accountants and law firms appeared repeatedly** across multiple suspicious loan applications.
+
+**AUSTRAC's message to lenders:** *"The most effective way to stop mortgage fraud is before a loan is approved."* Lenders were urged to review their mortgage books, report suspicious activity, strengthen controls and verify applications before approval.
+
+**Why it matters for our project:**
+- Fraud is often **organised and repeated across many applications**, not one-off. Reviewing applications one at a time misses it.
+- This supports the brief's focus on **broker portfolio analysis** and **detecting risk before approval**.
+
+---
+
+## 2. Methods of Fraud
+
+| Method | How it works | How it shows up in data |
+|---|---|---|
+| **Income inflation** | Applicant declares a higher salary than they earn so they can borrow more, often backed by false payslips. | Salary much higher than others in the same occupation and region; loan size unusually large for the occupation. |
+| **Fictitious / misrepresented employment** | Fake employer, made-up job title, or a claimed stable job that doesn't exist. Fake employers may "confirm" employment by phone. | Short tenure with a high salary; the same employer appearing across many unrelated applicants. |
+| **Fabricated business activity** | Self-employed applicants claim business income that can't be verified, sometimes using fake invoices or shell companies. | High self-employed income with short trading history; repeated business names across applications. |
+| **Expense suppression** | Applicant understates living costs so the loan passes serviceability. | Declared expenses far below peers with similar income and household size; serviceability passed by a narrow margin. |
+| **Undisclosed liabilities** | Applicant hides existing debts such as credit cards or personal loans. | Limited for us: credit bureau integration is out of scope. |
+| **Identity manipulation** | Use of a stolen identity or a synthetic (made-up) identity to borrow under a clean credit history. | Limited for us: government data matching is out of scope. |
+| **Application misrepresentation** | E.g. an investor claims to be an owner-occupier to get a lower rate. | Loan purpose inconsistent with other details (if loan purpose is in our data). |
+| **Third-party or offshore funds** | Deposit or repayments come from someone else to hide that the borrower can't afford the loan. | Hard to see at application. May appear later as **early arrears** when outside funding stops. |
+| **Collusive broker behaviour** | A broker knowingly submits manipulated applications. | Broker's clients share employers, income amounts or loan structures; high approval rate, arrears and fraud referrals vs peers. |
+| **Organised fraud rings** | Networks of brokers, accountants, lawyers and borrowers working together (the Operation Claw pattern). | Clusters of brokers or applications sharing employers, aggregators, regions or patterns. |
 
 ---
 
@@ -208,6 +279,39 @@ The lifecycle has 8 stages. Each stage has inputs, checks and outputs. Fraud can
 | 5 | Concentration in a region or aggregator | Fraud networks often operate within a geographic area. | Region, aggregator |
 | 6 | Sudden increase in submission volume | May indicate a batch of manipulated applications. | Applications submitted, application date |
 
+### 4.6 What our broker data tells us
+
+| Broker dataset field | What it tells us |
+|---|---|
+| Broker ID | Links the broker to every application they submitted, so we can analyse their whole portfolio |
+| Region | Where the broker operates; used for peer comparison and geographic concentration |
+| Aggregator | Which aggregator the broker works under; clusters of risky brokers under one aggregator may signal wider issues |
+| Applications submitted | Volume of business; sudden spikes are a warning sign |
+| Approval rate | Share of applications approved; unusually high vs peers may suggest "coached" applications |
+| Fraud referrals | Number of past applications referred to the fraud team; a strong predictor of future risk |
+| Early arrears rate | Share of the broker's settled loans falling behind early; suggests borrowers' ability to repay was misstated |
+
+### 4.7 How broker fraud happens
+- **Coaching:** the broker advises the borrower what figures to declare so the application passes (e.g. "put your income at $120k").
+- **Document manufacturing:** the broker or a third party creates or alters payslips, employment letters or bank statements.
+- **Templated applications:** the same employer, income amounts or loan structures reused across many unrelated clients.
+- **Collusion networks:** the broker works with accountants, lawyers or valuers who supply false documents or valuations, as seen in Operation Claw.
+
+### 4.8 How lenders monitor brokers today
+- **Broker scorecards:** lenders track each broker's approval rate, arrears, fraud referrals and application quality.
+- **Quality reviews:** samples of a broker's applications are checked for errors or inconsistencies.
+- **Peer comparison:** brokers are compared with others in the same region or aggregator.
+- **Accreditation action:** lenders can place a broker on watch, require extra checks, or suspend or terminate their accreditation.
+- **Regulatory reporting:** serious concerns can be reported to ASIC (conduct) or AUSTRAC (suspicious matters).
+
+**Gap our project addresses:** These reviews are often manual and periodic. Our Broker Risk Scoring Engine and Portfolio Pattern Detection aim to make broker monitoring **continuous, data-driven and explainable**.
+
+### 4.9 Implications for broker scoring
+- A **high-risk broker** should be defined by a combination of signals (e.g. arrears, referrals, repeated patterns) compared with peers, not one metric alone.
+- Every broker risk rating needs **reasons**, just like application flags.
+- **Brokers are individuals.** Their risk scores are personal information and could affect their livelihood, so ratings must be explainable and brokers should be able to challenge them.
+- A risk rating is a **trigger for review**, not proof of misconduct.
+
 ---
 
 ## 5. Credit Assessment Process
@@ -318,3 +422,48 @@ Example: $680,000 ÷ $850,000 = 80%
 | LVR | How much of the property is the lender funding? | Loan ÷ value; > 80% needs LMI | Inflate valuation, hide deposit source |
 | Credit score | Is the borrower's credit history reliable? | Bureau score | Identity manipulation |
 | Employment | Is the income stable and real? | Type + tenure + verifiable employer | Fake employer, short tenure + high pay |
+
+---
+
+## 6. Fraud Types vs Our Scope
+
+The brief puts credit bureau data, property valuation APIs, government data matching, income verification services and document analysis (stretch goal only) **out of scope**. This limits what we can detect.
+
+| Fraud type | Can we detect it with our data? | Notes |
+|---|---|---|
+| Income inflation | Yes | Sprint 1 synthetic scenario |
+| Expense suppression | Yes | Sprint 1 synthetic scenario |
+| Fictitious employment / employment anomalies | Yes | Sprint 1 synthetic scenario |
+| Collusive broker behaviour | Yes | Sprint 1 synthetic scenario |
+| Organised fraud rings | Partly | Sprint 3 network analysis, built on broker collusion patterns |
+| Application misrepresentation | Partly | Possible if loan purpose is added to the data |
+| Fabricated business activity | Partly | Possible if employment type (self-employed) is added |
+| Third-party / offshore funds | Partly | Not visible at application; indirectly via early arrears |
+| Undisclosed liabilities | Limited | Needs credit bureau data (out of scope) |
+| Identity manipulation |  Limited | Needs government data matching (out of scope) |
+| Falsified documents | Not now | Document analysis is a stretch goal only |
+
+---
+
+## 7. Implications for Our Project
+
+1. **Look at portfolios, not just single applications.** Operation Claw's main finding was repeated intermediaries. Broker-level and network-level detection is where our system adds the most value.
+2. **We need extra data fields.** Comparing applicants with their peers needs **occupation, employer name, region, household size, application date, loan purpose and employment type**. Most of these aren't in the brief's field list.
+3. **Use real-world rules in the synthetic data.** Following the 3% serviceability buffer, the DTI ≥ 6 limit and the 80% LVR threshold makes the data and demo credible to a banking audience.
+4. **Explanations should compare to peers.** For example: "Declared income is 3.4x higher than comparable applicants." This needs a clearly defined peer group (e.g. same occupation and region).
+5. **Detect before approval, learn after settlement.** Our system flags risk at Stage 6. Early arrears and fraud referrals from Stage 8 feed back into broker risk scoring.
+6. **Humans make the decision.** The system gives risk indicators and recommendations only. Lenders remain responsible under responsible lending rules, so every output must be explainable and auditable.
+7. **Be fair to applicants and brokers.** Region and postcode are useful (fraud clustered in Sydney) but can act as a proxy for ethnicity or socioeconomic background. Broker ratings affect real people's livelihoods. Both need careful handling and a way to challenge outcomes.
+8. **Be honest about limits.** Some fraud types can't be detected with in-scope data (section 6). These limits should be stated in our documentation and demo.
+
+---
+
+## Sources
+
+- [AUSTRAC – Fintel Alliance uncovers coordinated mortgage fraud across major lenders](https://www.austrac.gov.au/news-and-media/media-release/fintel-alliance-uncovers-coordinated-mortgage-fraud-across-major-lenders)
+- [AUSTRAC – Major mortgage fraud risks uncovered](https://www.austrac.gov.au/news-and-media/article/major-mortgage-fraud-risks-uncovered)
+- [Broker Daily – AUSTRAC uncovers hundreds of millions in suspected mortgage fraud](https://www.brokerdaily.au/regulation/21908-austrac-uncovers-hundreds-of-millions-in-suspected-mortgage-fraud)
+- [The Adviser – AUSTRAC refers brokers to authorities in mortgage fraud probe](https://www.theadviser.com.au/broker/48830-austrac-refers-brokers-to-authorities-in-mortgage-fraud-probe)
+- [MFAA – Mortgage broker market share reaches record 81.6%](https://www.mfaa.com.au/news/mortgage-broker-market-share-reaches-record-81-6)
+- [APRA – Macroprudential settings media release (May 2026)](https://www.apra.gov.au/node/42931)
+- [Allens – Mortgage broker best interests duty](https://www.allens.com.au/insights-news/insights/2020/02/mortgage-broker-best-interests-duty/)
